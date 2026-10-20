@@ -1,0 +1,981 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>Tic-Tac-Toe</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Bitter:ital,wght@0,500;0,700;0,800;1,500&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #f7efdd;
+        --bg-deep: #efe2c6;
+        --surface: #fffaf0;
+        --surface-2: #f3e8cf;
+        --ink: #33241a;
+        --ink-soft: #6d5744;
+        --line: #d9c49c;
+        --cell: #fffaf0;
+        --cell-edge: #cdb488;
+        --x-color: #b3402a;
+        --x-soft: #f6d9cf;
+        --o-color: #1f6f6b;
+        --o-soft: #cfe7e2;
+        --win-bg: #f2c14e;
+        --win-ink: #4a2f10;
+        --accent: #8a5a2b;
+        --accent-ink: #fff8ec;
+        --shadow: 0 10px 30px rgba(84, 55, 20, 0.16);
+        --radius: 18px;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #1d130c;
+          --bg-deep: #150d07;
+          --surface: #2b1d12;
+          --surface-2: #3a2817;
+          --ink: #f3e6cf;
+          --ink-soft: #c8ab84;
+          --line: #57402a;
+          --cell: #33220f;
+          --cell-edge: #5d4125;
+          --x-color: #f0856c;
+          --x-soft: #4c241a;
+          --o-color: #6fd3cb;
+          --o-soft: #173d3a;
+          --win-bg: #e9b83f;
+          --win-ink: #2c1c05;
+          --accent: #d99a4e;
+          --accent-ink: #2a1a08;
+          --shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+        }
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body {
+        font-family: "Source Sans 3", system-ui, -apple-system, "Segoe UI", sans-serif;
+        background: linear-gradient(180deg, var(--bg) 0%, var(--bg-deep) 100%);
+        color: var(--ink);
+        min-height: 100vh;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .wrap {
+        max-width: 520px;
+        margin: 0 auto;
+        padding: 16px 16px 40px;
+      }
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 6px;
+      }
+      .home-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        text-decoration: none;
+        color: var(--accent-ink);
+        background: var(--accent);
+        font-weight: 700;
+        font-size: 0.95rem;
+        padding: 9px 16px;
+        border-radius: 999px;
+        box-shadow: var(--shadow);
+        min-height: 44px;
+      }
+      .sound-btn {
+        appearance: none;
+        border: 1px solid var(--line);
+        background: var(--surface);
+        color: var(--ink);
+        font: inherit;
+        font-weight: 600;
+        font-size: 0.95rem;
+        padding: 9px 14px;
+        border-radius: 999px;
+        cursor: pointer;
+        min-height: 44px;
+      }
+      h1 {
+        font-family: "Bitter", Georgia, serif;
+        font-weight: 800;
+        font-size: 2.1rem;
+        text-align: center;
+        margin: 10px 0 2px;
+        letter-spacing: 0.01em;
+      }
+      .tagline {
+        text-align: center;
+        font-family: "Bitter", Georgia, serif;
+        font-style: italic;
+        color: var(--ink-soft);
+        margin: 0 0 18px;
+        font-size: 1.02rem;
+      }
+      .panel {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 14px;
+        margin-bottom: 16px;
+      }
+      .panel h2 {
+        font-family: "Bitter", Georgia, serif;
+        font-size: 1rem;
+        margin: 0 0 10px;
+        color: var(--ink-soft);
+        font-weight: 700;
+      }
+      .seg-row { margin-bottom: 12px; }
+      .seg-row:last-child { margin-bottom: 0; }
+      .seg-label {
+        display: block;
+        font-size: 0.82rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--ink-soft);
+        margin-bottom: 6px;
+      }
+      .seg {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      .seg button {
+        flex: 1 1 auto;
+        appearance: none;
+        border: 1.5px solid var(--line);
+        background: var(--surface-2);
+        color: var(--ink);
+        font: inherit;
+        font-weight: 600;
+        font-size: 0.98rem;
+        padding: 10px 8px;
+        border-radius: 12px;
+        cursor: pointer;
+        min-height: 48px;
+      }
+      .seg button[aria-pressed="true"] {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: var(--accent-ink);
+      }
+      .seg button:focus-visible, .sound-btn:focus-visible, .action-btn:focus-visible, .cell:focus-visible {
+        outline: 3px solid var(--o-color);
+        outline-offset: 2px;
+      }
+      .hidden { display: none !important; }
+
+      .status {
+        text-align: center;
+        font-family: "Bitter", Georgia, serif;
+        font-size: 1.35rem;
+        font-weight: 700;
+        min-height: 2.2em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 2px 0 12px;
+        padding: 0 6px;
+      }
+      .status .turn-x { color: var(--x-color); }
+      .status .turn-o { color: var(--o-color); }
+
+      .board-frame {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        box-shadow: var(--shadow);
+        padding: 12px;
+        margin-bottom: 16px;
+      }
+      .board {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+      }
+      .cell {
+        appearance: none;
+        border: 2px solid var(--cell-edge);
+        background: var(--cell);
+        border-radius: 16px;
+        aspect-ratio: 1 / 1;
+        font-family: "Bitter", Georgia, serif;
+        font-weight: 800;
+        font-size: clamp(2.6rem, 15vw, 4.2rem);
+        line-height: 1;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        color: var(--ink);
+        transition: background 0.15s ease, transform 0.1s ease;
+      }
+      .cell:not(:disabled):active { transform: scale(0.96); }
+      .cell:disabled { cursor: default; }
+      .cell.mark-x { color: var(--x-color); background: var(--x-soft); border-color: var(--x-color); }
+      .cell.mark-o { color: var(--o-color); background: var(--o-soft); border-color: var(--o-color); }
+      .cell.win {
+        background: var(--win-bg);
+        border-color: var(--win-bg);
+        color: var(--win-ink);
+        animation: winPulse 0.9s ease-in-out infinite alternate;
+      }
+      @keyframes winPulse {
+        from { transform: scale(1); }
+        to { transform: scale(1.045); }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .cell.win { animation: none; }
+        .cell { transition: none; }
+      }
+      .cell .mark {
+        display: inline-block;
+        animation: pop 0.18s ease-out;
+      }
+      @keyframes pop {
+        from { transform: scale(0.4); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .cell .mark { animation: none; }
+      }
+
+      .tally {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 16px;
+      }
+      .tally .box {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        box-shadow: var(--shadow);
+        text-align: center;
+        padding: 10px 4px 8px;
+      }
+      .tally .num {
+        font-family: "Bitter", Georgia, serif;
+        font-size: 1.8rem;
+        font-weight: 800;
+        display: block;
+        line-height: 1.1;
+      }
+      .tally .lbl { font-size: 0.88rem; font-weight: 600; color: var(--ink-soft); }
+      .tally .box.x .num { color: var(--x-color); }
+      .tally .box.o .num { color: var(--o-color); }
+
+      .actions {
+        display: flex;
+        gap: 10px;
+      }
+      .action-btn {
+        flex: 1;
+        appearance: none;
+        border-radius: 14px;
+        font: inherit;
+        font-weight: 700;
+        font-size: 1.05rem;
+        padding: 14px 10px;
+        cursor: pointer;
+        min-height: 54px;
+      }
+      .action-btn.primary {
+        background: var(--accent);
+        border: 1.5px solid var(--accent);
+        color: var(--accent-ink);
+        box-shadow: var(--shadow);
+      }
+      .action-btn.secondary {
+        background: var(--surface);
+        border: 1.5px solid var(--line);
+        color: var(--ink);
+      }
+      .note {
+        text-align: center;
+        color: var(--ink-soft);
+        font-size: 0.92rem;
+        margin: 14px 4px 0;
+      }
+      .checks {
+        margin-top: 22px;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 10px 14px;
+        font-size: 0.9rem;
+        color: var(--ink-soft);
+      }
+      .checks summary {
+        cursor: pointer;
+        font-weight: 700;
+        color: var(--ink);
+        padding: 4px 0;
+      }
+      .checks ul { margin: 8px 0 6px; padding-left: 20px; }
+      .checks li { margin-bottom: 5px; }
+      .checks li.fail { color: var(--x-color); font-weight: 700; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="topbar">
+        <a class="home-pill" href="https://jesuslovestyler.com/">⌂ Home</a>
+        <button class="sound-btn" id="soundBtn" type="button" aria-pressed="true">🔊 Sound on</button>
+      </div>
+
+      <h1>Tic-Tac-Toe</h1>
+      <p class="tagline">Three in a row wins — the oldest game on the back of a napkin.</p>
+
+      <section class="panel" aria-label="Game settings">
+        <div class="seg-row">
+          <span class="seg-label" id="modeLabel">Play</span>
+          <div class="seg" role="group" aria-labelledby="modeLabel">
+            <button type="button" id="modeCpu" aria-pressed="true">Vs Computer</button>
+            <button type="button" id="modeTwo" aria-pressed="false">Two Players</button>
+          </div>
+        </div>
+        <div class="seg-row" id="difficultyRow">
+          <span class="seg-label" id="diffLabel">Computer strength</span>
+          <div class="seg" role="group" aria-labelledby="diffLabel">
+            <button type="button" data-diff="easy" aria-pressed="false">Easy</button>
+            <button type="button" data-diff="medium" aria-pressed="true">Medium</button>
+            <button type="button" data-diff="hard" aria-pressed="false">Hard</button>
+          </div>
+        </div>
+        <div class="seg-row" id="sideRow">
+          <span class="seg-label" id="sideLabel">You play</span>
+          <div class="seg" role="group" aria-labelledby="sideLabel">
+            <button type="button" data-side="X" aria-pressed="true">X — go first</button>
+            <button type="button" data-side="O" aria-pressed="false">O — go second</button>
+          </div>
+        </div>
+      </section>
+
+      <p class="status" id="status" role="status" aria-live="polite"></p>
+
+      <div class="board-frame">
+        <div class="board" id="board" role="grid" aria-label="Tic-tac-toe board"></div>
+      </div>
+
+      <div class="tally" aria-label="Match score">
+        <div class="box x"><span class="num" id="tallyX">0</span><span class="lbl" id="tallyXLabel">X wins</span></div>
+        <div class="box"><span class="num" id="tallyD">0</span><span class="lbl">Draws</span></div>
+        <div class="box o"><span class="num" id="tallyO">0</span><span class="lbl" id="tallyOLabel">O wins</span></div>
+      </div>
+
+      <div class="actions">
+        <button class="action-btn primary" id="nextRoundBtn" type="button">Next round</button>
+        <button class="action-btn secondary" id="newMatchBtn" type="button">New match</button>
+      </div>
+
+      <p class="note" id="modeNote"></p>
+
+      <details class="checks" id="checksPanel">
+        <summary id="checksSummary">Game checks: running…</summary>
+        <ul id="checksList"></ul>
+      </details>
+    </div>
+
+    <script>
+      (function () {
+        "use strict";
+
+        var LINES = [
+          [0, 1, 2], [3, 4, 5], [6, 7, 8],
+          [0, 3, 6], [1, 4, 7], [2, 5, 8],
+          [0, 4, 8], [2, 4, 6]
+        ];
+
+        // ---------- Pure game logic (also exercised by the self-check) ----------
+        function winnerOf(board) {
+          for (var i = 0; i < LINES.length; i++) {
+            var a = LINES[i][0], b = LINES[i][1], c = LINES[i][2];
+            if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+              return { player: board[a], line: LINES[i].slice() };
+            }
+          }
+          return null;
+        }
+        function isFull(board) {
+          for (var i = 0; i < 9; i++) if (!board[i]) return false;
+          return true;
+        }
+        function emptyCells(board) {
+          var out = [];
+          for (var i = 0; i < 9; i++) if (!board[i]) out.push(i);
+          return out;
+        }
+        function other(p) { return p === "X" ? "O" : "X"; }
+
+        function minimax(board, turn, me, depth) {
+          var w = winnerOf(board);
+          if (w) return w.player === me ? 10 - depth : depth - 10;
+          if (isFull(board)) return 0;
+          var cells = emptyCells(board);
+          var best = turn === me ? -Infinity : Infinity;
+          for (var i = 0; i < cells.length; i++) {
+            board[cells[i]] = turn;
+            var s = minimax(board, other(turn), me, depth + 1);
+            board[cells[i]] = null;
+            if (turn === me) { if (s > best) best = s; }
+            else { if (s < best) best = s; }
+          }
+          return best;
+        }
+        function bestMove(board, me) {
+          var cells = emptyCells(board);
+          var bestScore = -Infinity, bestCell = cells[0];
+          for (var i = 0; i < cells.length; i++) {
+            board[cells[i]] = me;
+            var s = minimax(board, other(me), me, 0);
+            board[cells[i]] = null;
+            if (s > bestScore) { bestScore = s; bestCell = cells[i]; }
+          }
+          return bestCell;
+        }
+        function findWinningMove(board, p) {
+          var cells = emptyCells(board);
+          for (var i = 0; i < cells.length; i++) {
+            board[cells[i]] = p;
+            var w = winnerOf(board);
+            board[cells[i]] = null;
+            if (w && w.player === p) return cells[i];
+          }
+          return -1;
+        }
+        function mediumMove(board, me) {
+          var win = findWinningMove(board, me);
+          if (win !== -1) return win;
+          var block = findWinningMove(board, other(me));
+          if (block !== -1) return block;
+          if (!board[4]) return 4;
+          var corners = [0, 2, 6, 8].filter(function (i) { return !board[i]; });
+          // Take a corner opposite one of ours when free, else any corner.
+          for (var i = 0; i < corners.length; i++) {
+            var opp = 8 - corners[i];
+            if (board[opp] === me) return corners[i];
+          }
+          if (corners.length) return corners[Math.floor(Math.random() * corners.length)];
+          var edges = [1, 3, 5, 7].filter(function (i) { return !board[i]; });
+          return edges[Math.floor(Math.random() * edges.length)];
+        }
+        function easyMove(board, me) {
+          // Mostly random: only occasionally plays the sensible move, so it
+          // will miss wins and blocks like a casual beginner.
+          if (Math.random() < 0.2) return mediumMove(board, me);
+          var cells = emptyCells(board);
+          return cells[Math.floor(Math.random() * cells.length)];
+        }
+        function computerMove(board, me, difficulty) {
+          if (difficulty === "hard") return bestMove(board, me);
+          if (difficulty === "medium") return mediumMove(board, me);
+          return easyMove(board, me);
+        }
+
+        // ---------- Persistent tally ----------
+        var store = {
+          get: function (k) {
+            try { return window.localStorage.getItem(k); } catch (e) { return null; }
+          },
+          set: function (k, v) {
+            try { window.localStorage.setItem(k, v); } catch (e) { /* play on without storage */ }
+          }
+        };
+        var tally = { X: 0, O: 0, D: 0 };
+        try {
+          var saved = JSON.parse(store.get("ttt_tally") || "null");
+          if (saved && typeof saved.X === "number" && typeof saved.O === "number" && typeof saved.D === "number") {
+            tally = saved;
+          }
+        } catch (e) { /* fresh tally */ }
+        var soundOn = store.get("ttt_sound") !== "off";
+
+        function saveTally() { store.set("ttt_tally", JSON.stringify(tally)); }
+
+        // ---------- Sound (soft Web Audio blips) ----------
+        var selfTesting = false;
+        var audioCtx = null;
+        function ac() {
+          if (!audioCtx) {
+            var AC = window.AudioContext || window.webkitAudioContext;
+            if (AC) audioCtx = new AC();
+          }
+          if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
+          return audioCtx;
+        }
+        function tone(freq, start, dur, vol) {
+          if (!soundOn || selfTesting) return;
+          var ctx = ac();
+          if (!ctx) return;
+          var t = ctx.currentTime + start;
+          var osc = ctx.createOscillator();
+          var gain = ctx.createGain();
+          osc.type = "sine";
+          osc.frequency.setValueAtTime(freq, t);
+          gain.gain.setValueAtTime(0.0001, t);
+          gain.gain.exponentialRampToValueAtTime(vol, t + 0.015);
+          gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+          osc.connect(gain); gain.connect(ctx.destination);
+          osc.start(t); osc.stop(t + dur + 0.05);
+        }
+        function sndPlace(p) { tone(p === "X" ? 520 : 392, 0, 0.14, 0.06); }
+        function sndWin() { tone(523, 0, 0.16, 0.06); tone(659, 0.11, 0.16, 0.06); tone(784, 0.22, 0.26, 0.06); }
+        function sndDraw() { tone(330, 0, 0.18, 0.05); tone(294, 0.14, 0.24, 0.05); }
+
+        // ---------- State ----------
+        var state = {
+          mode: "cpu",            // "cpu" | "two"
+          difficulty: "medium",
+          humanSide: "X",
+          board: [null, null, null, null, null, null, null, null, null],
+          turn: "X",
+          starter: "X",           // who starts the current round
+          roundOver: false,
+          winLine: null,
+          busy: false,            // computer thinking
+          timer: null
+        };
+
+        // ---------- DOM ----------
+        var boardEl = document.getElementById("board");
+        var statusEl = document.getElementById("status");
+        var cells = [];
+        for (var i = 0; i < 9; i++) {
+          var btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "cell";
+          btn.setAttribute("role", "gridcell");
+          btn.setAttribute("aria-label", "Square " + (i + 1) + ", empty");
+          btn.dataset.index = i;
+          boardEl.appendChild(btn);
+          cells.push(btn);
+        }
+
+        var tallyXEl = document.getElementById("tallyX");
+        var tallyOEl = document.getElementById("tallyO");
+        var tallyDEl = document.getElementById("tallyD");
+        var modeNoteEl = document.getElementById("modeNote");
+
+        function computerSide() { return other(state.humanSide); }
+
+        function nameFor(p) {
+          if (state.mode === "two") return p;
+          return p === state.humanSide ? p + " (you)" : p + " (computer)";
+        }
+
+        function render() {
+          for (var i = 0; i < 9; i++) {
+            var v = state.board[i];
+            var cell = cells[i];
+            cell.className = "cell" + (v ? " mark-" + v.toLowerCase() : "") +
+              (state.winLine && state.winLine.indexOf(i) !== -1 ? " win" : "");
+            cell.innerHTML = v ? '<span class="mark">' + v + "</span>" : "";
+            cell.disabled = state.roundOver || !!v || state.busy ||
+              (state.mode === "cpu" && state.turn === computerSide());
+            cell.setAttribute("aria-label",
+              "Square " + (i + 1) + (v ? ", " + v : ", empty"));
+          }
+          tallyXEl.textContent = tally.X;
+          tallyOEl.textContent = tally.O;
+          tallyDEl.textContent = tally.D;
+          document.getElementById("tallyXLabel").textContent =
+            state.mode === "cpu" ? (state.humanSide === "X" ? "X wins — you" : "X wins — computer") : "X wins";
+          document.getElementById("tallyOLabel").textContent =
+            state.mode === "cpu" ? (state.humanSide === "O" ? "O wins — you" : "O wins — computer") : "O wins";
+
+          if (state.roundOver) {
+            var w = winnerOf(state.board);
+            if (w) {
+              statusEl.innerHTML = w.player + " wins!" +
+                (state.mode === "cpu"
+                  ? (w.player === state.humanSide ? " Well played!" : " The computer takes this one.")
+                  : "");
+            } else {
+              statusEl.textContent = "A draw — cat's game!";
+            }
+          } else if (state.busy) {
+            statusEl.textContent = "Computer is thinking…";
+          } else if (state.mode === "cpu" && state.turn === computerSide()) {
+            statusEl.innerHTML = '<span class="turn-' + state.turn.toLowerCase() + '">' +
+              state.turn + "</span>&nbsp;— computer's turn";
+          } else {
+            statusEl.innerHTML = '<span class="turn-' + state.turn.toLowerCase() + '">' +
+              state.turn + "</span>&nbsp;" +
+              (state.mode === "cpu" ? "— your turn" : "to move");
+          }
+
+          modeNoteEl.textContent = state.mode === "two"
+            ? "Two players, one device — pass it back and forth. " + state.starter + " starts this round; the starting player swaps each round."
+            : "You are " + state.humanSide + ". " +
+              (state.difficulty === "hard" ? "Hard plays perfectly — the best anyone can do is draw."
+                : state.difficulty === "medium" ? "Medium takes its wins and blocks yours."
+                : "Easy plays loosely, like a beginner learning the ropes.");
+        }
+
+        function placeMark(idx) {
+          if (state.roundOver || state.board[idx]) return false;
+          var p = state.turn;
+          state.board[idx] = p;
+          sndPlace(p);
+          var w = winnerOf(state.board);
+          if (w) {
+            state.roundOver = true;
+            state.winLine = w.line;
+            tally[w.player] += 1;
+            saveTally();
+            sndWin();
+          } else if (isFull(state.board)) {
+            state.roundOver = true;
+            state.winLine = null;
+            tally.D += 1;
+            saveTally();
+            sndDraw();
+          } else {
+            state.turn = other(p);
+          }
+          render();
+          maybeComputerTurn();
+          return true;
+        }
+
+        function maybeComputerTurn() {
+          if (state.mode !== "cpu" || state.roundOver) return;
+          if (state.turn !== computerSide()) return;
+          state.busy = true;
+          render();
+          state.timer = window.setTimeout(function () {
+            state.busy = false;
+            var mv = computerMove(state.board.slice(), computerSide(), state.difficulty);
+            if (mv >= 0) {
+              // placeMark re-renders and re-checks for a follow-up (never needed)
+              state.busy = false;
+              placeMark(mv);
+            } else {
+              render();
+            }
+          }, 400);
+        }
+
+        function startRound(starter) {
+          if (state.timer) { window.clearTimeout(state.timer); state.timer = null; }
+          state.board = [null, null, null, null, null, null, null, null, null];
+          state.starter = starter;
+          state.turn = starter;
+          state.roundOver = false;
+          state.winLine = null;
+          state.busy = false;
+          render();
+          maybeComputerTurn();
+        }
+
+        function startMatch() {
+          // A fresh match always opens with X (in two-player mode, X starts
+          // match round 1 and the starter alternates from there).
+          startRound(state.mode === "two" ? "X" : "X");
+        }
+
+        function newMatch() {
+          tally = { X: 0, O: 0, D: 0 };
+          saveTally();
+          startMatch();
+        }
+
+        function nextRound() {
+          var starter = state.mode === "two" ? other(state.starter) : "X";
+          startRound(starter);
+        }
+
+        boardEl.addEventListener("click", function (ev) {
+          var t = ev.target;
+          while (t && t !== boardEl && !t.classList.contains("cell")) t = t.parentNode;
+          if (!t || t === boardEl) return;
+          if (state.busy || state.roundOver) return;
+          if (state.mode === "cpu" && state.turn === computerSide()) return;
+          placeMark(parseInt(t.dataset.index, 10));
+        });
+
+        // ---------- Settings controls ----------
+        var modeCpuBtn = document.getElementById("modeCpu");
+        var modeTwoBtn = document.getElementById("modeTwo");
+        var diffRow = document.getElementById("difficultyRow");
+        var sideRow = document.getElementById("sideRow");
+        var diffBtns = Array.prototype.slice.call(document.querySelectorAll("[data-diff]"));
+        var sideBtns = Array.prototype.slice.call(document.querySelectorAll("[data-side]"));
+
+        function syncSettingsUI() {
+          modeCpuBtn.setAttribute("aria-pressed", state.mode === "cpu" ? "true" : "false");
+          modeTwoBtn.setAttribute("aria-pressed", state.mode === "two" ? "true" : "false");
+          diffRow.classList.toggle("hidden", state.mode !== "cpu");
+          sideRow.classList.toggle("hidden", state.mode !== "cpu");
+          diffBtns.forEach(function (b) {
+            b.setAttribute("aria-pressed", b.dataset.diff === state.difficulty ? "true" : "false");
+          });
+          sideBtns.forEach(function (b) {
+            b.setAttribute("aria-pressed", b.dataset.side === state.humanSide ? "true" : "false");
+          });
+        }
+        function settingsChanged() {
+          syncSettingsUI();
+          newMatch();
+        }
+        modeCpuBtn.addEventListener("click", function () {
+          if (state.mode !== "cpu") { state.mode = "cpu"; settingsChanged(); }
+        });
+        modeTwoBtn.addEventListener("click", function () {
+          if (state.mode !== "two") { state.mode = "two"; settingsChanged(); }
+        });
+        diffBtns.forEach(function (b) {
+          b.addEventListener("click", function () {
+            if (state.difficulty !== b.dataset.diff) { state.difficulty = b.dataset.diff; settingsChanged(); }
+          });
+        });
+        sideBtns.forEach(function (b) {
+          b.addEventListener("click", function () {
+            if (state.humanSide !== b.dataset.side) { state.humanSide = b.dataset.side; settingsChanged(); }
+          });
+        });
+
+        document.getElementById("nextRoundBtn").addEventListener("click", nextRound);
+        document.getElementById("newMatchBtn").addEventListener("click", newMatch);
+
+        var soundBtn = document.getElementById("soundBtn");
+        function syncSoundBtn() {
+          soundBtn.textContent = soundOn ? "🔊 Sound on" : "🔇 Sound off";
+          soundBtn.setAttribute("aria-pressed", soundOn ? "true" : "false");
+        }
+        soundBtn.addEventListener("click", function () {
+          soundOn = !soundOn;
+          store.set("ttt_sound", soundOn ? "on" : "off");
+          syncSoundBtn();
+          if (soundOn) sndPlace("X");
+        });
+
+        syncSettingsUI();
+        syncSoundBtn();
+        startMatch();
+
+        // ---------- Hook for the in-page verification harness ----------
+        window.__ttt = {
+          LINES: LINES,
+          winnerOf: winnerOf,
+          isFull: isFull,
+          computerMove: computerMove,
+          bestMove: bestMove,
+          mediumMove: mediumMove,
+          state: state,
+          tally: function () { return { X: tally.X, O: tally.O, D: tally.D }; },
+          placeMark: placeMark,
+          nextRound: nextRound,
+          newMatch: newMatch,
+          setMode: function (m) { state.mode = m; syncSettingsUI(); newMatch(); },
+          setDifficulty: function (d) { state.difficulty = d; syncSettingsUI(); },
+          setSide: function (s) { state.humanSide = s; syncSettingsUI(); }
+        };
+
+        // ---------- In-page verification suite ----------
+        // Runs scripted games through the real board and rules on every load
+        // and reports below. It restores the visitor's saved tally when done,
+        // so the checks never touch a real match in progress.
+        (function runChecks() {
+          var results = [];
+          function check(name, ok, detail) {
+            results.push({ name: name, ok: !!ok, detail: detail || "" });
+          }
+          function sameLine(a, b) {
+            if (!a || !b || a.length !== b.length) return false;
+            for (var i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
+            return true;
+          }
+          // Three filler cells outside `line` that never complete a line
+          // themselves, so a scripted win is decided by the line alone.
+          function fillersFor(line, count) {
+            var rest = [];
+            for (var i = 0; i < 9; i++) if (line.indexOf(i) === -1) rest.push(i);
+            function combos(arr, n, start, cur, out) {
+              if (cur.length === n) { out.push(cur.slice()); return; }
+              for (var j = start; j < arr.length; j++) {
+                cur.push(arr[j]); combos(arr, n, j + 1, cur, out); cur.pop();
+              }
+            }
+            var cs = [];
+            combos(rest, count, 0, [], cs);
+            for (var k = 0; k < cs.length; k++) {
+              var b = [null, null, null, null, null, null, null, null, null];
+              cs[k].forEach(function (i) { b[i] = "F"; });
+              var bad = false;
+              for (var li = 0; li < LINES.length; li++) {
+                var L = LINES[li];
+                if (b[L[0]] === "F" && b[L[1]] === "F" && b[L[2]] === "F") { bad = true; break; }
+              }
+              if (!bad) return cs[k];
+            }
+            return cs[0];
+          }
+          function playSeq(seq) {
+            for (var i = 0; i < seq.length; i++) placeMark(seq[i]);
+          }
+
+          var savedTally = { X: tally.X, O: tally.O, D: tally.D };
+          selfTesting = true;
+          try {
+            // (1) All 8 lines, for X and for O: detected, highlighted, tally +1.
+            var linesOk = true, linesDetail = "";
+            window.__ttt.setMode("two");
+            for (var li = 0; li < LINES.length && linesOk; li++) {
+              var line = LINES[li];
+              // X takes the line (X starts the match).
+              newMatch();
+              var t0 = window.__ttt.tally();
+              var fx = fillersFor(line, 2);
+              playSeq([line[0], fx[0], line[1], fx[1], line[2]]);
+              var w = winnerOf(state.board);
+              var hl = line.every(function (i) { return cells[i].classList.contains("win"); });
+              var t1 = window.__ttt.tally();
+              if (!state.roundOver || !w || w.player !== "X" || !sameLine(state.winLine, line) ||
+                  !hl || t1.X !== t0.X + 1 || t1.O !== t0.O || t1.D !== t0.D) {
+                linesOk = false; linesDetail = "X line " + line.join("-") + " failed";
+                break;
+              }
+              // O takes the line (X fills three harmless squares first).
+              newMatch();
+              t0 = window.__ttt.tally();
+              var fo = fillersFor(line, 3);
+              playSeq([fo[0], line[0], fo[1], line[1], fo[2], line[2]]);
+              w = winnerOf(state.board);
+              hl = line.every(function (i) { return cells[i].classList.contains("win"); });
+              t1 = window.__ttt.tally();
+              if (!state.roundOver || !w || w.player !== "O" || !sameLine(state.winLine, line) ||
+                  !hl || t1.O !== t0.O + 1 || t1.X !== t0.X || t1.D !== t0.D) {
+                linesOk = false; linesDetail = "O line " + line.join("-") + " failed";
+              }
+            }
+            check("All 8 winning lines win for both X and O — line highlighted, tally +1",
+              linesOk, linesDetail || "16 scripted games");
+
+            // (2) Full board, no line: a draw.
+            newMatch();
+            var d0 = window.__ttt.tally();
+            playSeq([0, 1, 2, 4, 3, 5, 7, 6, 8]); // X O X / X O O / O X X
+            var d1 = window.__ttt.tally();
+            check("A full board with no line is a draw — “cat's game”",
+              state.roundOver && !winnerOf(state.board) && isFull(state.board) && d1.D === d0.D + 1);
+
+            // (3) No marks after the round ends, none on an occupied square.
+            newMatch();
+            playSeq([0, 3, 1, 4, 2]); // X takes the top row
+            var snap = state.board.join(",");
+            var afterEnd = placeMark(8);
+            var afterOk = afterEnd === false && state.board.join(",") === snap;
+            newMatch();
+            placeMark(4);
+            var occOk = placeMark(4) === false && state.board[4] === "X" &&
+              state.board.filter(Boolean).length === 1;
+            check("No marks land after a round ends or on an occupied square", afterOk && occOk);
+
+            // (4) Hard: exhaustively try every opposing strategy; the computer
+            // (perfect minimax) must never lose, as X or as O.
+            function sweep(board, turn, cpu) {
+              var w = winnerOf(board);
+              if (w) return { games: 1, losses: w.player === cpu ? 0 : 1 };
+              if (isFull(board)) return { games: 1, losses: 0 };
+              if (turn === cpu) {
+                var mv = bestMove(board.slice(), cpu);
+                board[mv] = cpu;
+                var r = sweep(board, other(cpu), cpu);
+                board[mv] = null;
+                return r;
+              }
+              var tot = { games: 0, losses: 0 };
+              emptyCells(board).forEach(function (i) {
+                board[i] = turn;
+                var rr = sweep(board, cpu, cpu);
+                board[i] = null;
+                tot.games += rr.games; tot.losses += rr.losses;
+              });
+              return tot;
+            }
+            var sx = sweep([null, null, null, null, null, null, null, null, null], "X", "X");
+            var so = sweep([null, null, null, null, null, null, null, null, null], "X", "O");
+            check("Hard is unbeatable — every opposing strategy tried, as X and as O",
+              sx.losses === 0 && so.losses === 0 && sx.games > 50 && so.games > 50,
+              (sx.games + so.games) + " complete games, 0 computer losses");
+
+            // (5) Medium takes a presented win and blocks a presented threat.
+            var winBoard = ["O", "O", null, "X", "X", null, null, null, null];
+            var takesWin = mediumMove(winBoard.slice(), "O") === 2;
+            var blockBoard = ["X", "X", null, null, "O", null, null, null, null];
+            var blocks = mediumMove(blockBoard.slice(), "O") === 2;
+            check("Medium takes its own win and blocks yours", takesWin && blocks);
+
+            // Easy: 60 random games, every move legal, every game ends cleanly.
+            var easyOk = true;
+            for (var g = 0; g < 60 && easyOk; g++) {
+              var b = [null, null, null, null, null, null, null, null, null];
+              var turn = "X";
+              while (!winnerOf(b) && !isFull(b)) {
+                var m = turn === "X"
+                  ? computerMove(b.slice(), "X", "easy")
+                  : emptyCells(b)[Math.floor(Math.random() * emptyCells(b).length)];
+                if (m < 0 || b[m]) { easyOk = false; break; }
+                b[m] = turn;
+                turn = other(turn);
+              }
+            }
+            check("Easy completes legal games start to finish", easyOk, "60 games");
+
+            // (6) Two-player: X starts the match, then the starter alternates.
+            window.__ttt.setMode("two");
+            var a0 = state.starter === "X" && state.turn === "X";
+            nextRound();
+            var a1 = state.starter === "O" && state.turn === "O";
+            nextRound();
+            var a2 = state.starter === "X" && state.turn === "X";
+            check("Two players: X starts the match, starter alternates each round", a0 && a1 && a2);
+
+            // (7) Tally round-trips through localStorage (survives a reload).
+            saveTally();
+            var stored = null;
+            try { stored = JSON.parse(store.get("ttt_tally") || "null"); } catch (e) { stored = null; }
+            check("Score tally is saved to this device and reloads with the page",
+              !!stored && stored.X === tally.X && stored.O === tally.O && stored.D === tally.D);
+          } catch (err) {
+            check("Verification suite ran without errors", false, String(err && err.message || err));
+          }
+          selfTesting = false;
+
+          // Restore the visitor's real tally and a fresh match in the
+          // default mode, exactly as a normal page load would leave things.
+          tally.X = savedTally.X; tally.O = savedTally.O; tally.D = savedTally.D;
+          saveTally();
+          state.mode = "cpu";
+          syncSettingsUI();
+          startMatch();
+
+          var passed = results.filter(function (r) { return r.ok; }).length;
+          var listEl = document.getElementById("checksList");
+          results.forEach(function (r) {
+            var li2 = document.createElement("li");
+            if (!r.ok) li2.className = "fail";
+            li2.textContent = (r.ok ? "✓ " : "✗ ") + r.name + (r.detail ? " (" + r.detail + ")" : "");
+            listEl.appendChild(li2);
+          });
+          document.getElementById("checksSummary").textContent =
+            "Game checks: " + passed + " of " + results.length + " passed";
+          window.__ttt.checks = results;
+        })();
+      })();
+    </script>
+    <script data-goatcounter="https://jesuslovestyler.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+  </body>
+</html>
